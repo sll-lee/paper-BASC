@@ -8,12 +8,9 @@ The main script reproduces the West Germany application using the BASC model wit
 
 ```text
 .
-├── clean_basc_realdata.R        # Main script for the West Germany application
+├── BASC_basc_realdata.R        # Main script for the West Germany application
 ├── data/
-│   └── repgermany.dta           # Input data file; not included if restricted by license
-└── results/
-    └── realdata/                # Output files created by the script
-        └── plot/                # Figures created by the script
+    └── repgermany.dta           # Input data file; not included if restricted by license
 ```
 
 ## Requirements
@@ -95,13 +92,6 @@ plot/trace_plots_realdata.*              # Trace plots
 plot/density_plots_realdata.*            # Marginal posterior density plots
 plot/realdata_gamma.*                    # Posterior donor-inclusion plot
 ```
-
-## Notes
-
-- The MCMC update formulas follow the original analysis code used for the paper.
-- The script has been reorganized for readability and reproducibility, but the main sampling steps are intentionally preserved.
-- The current setting uses three chains with seeds `103`, `200`, and `305`.
-- The donor weights are computed from the posterior samples of the inclusion indicators and positive latent weights.
 
 ## Citation
 
