@@ -1,99 +1,163 @@
 # Bayesian Adaptive Synthetic Control (BASC)
 
-This repository provides code for the real-data application of the Bayesian Adaptive Synthetic Control (BASC) method.
+This repository provides replication code for the West Germany application of the Bayesian Adaptive Synthetic Control (BASC) method.
 
-The main script reproduces the West Germany application using the BASC model with donor-set selection and posterior counterfactual prediction.
+The repository contains code for BASC, standard synthetic control, and the comparison methods used in the West Germany application.
 
 ## Repository structure
 
 ```text
 .
-├── BASC_basc_realdata.R        # Main script for the West Germany application
-├── data/
-    └── repgermany.dta           # Input data file; not included if restricted by license
-```
-
-## Requirements
-
-The script is written in R and uses the following packages:
-
-```r
-required_packages <- c(
-  "tidysynth",
-  "foreign",
-  "dplyr",
-  "tidyr",
-  "tmvtnorm",
-  "MASS",
-  "MCMCpack",
-  "fields",
-  "coda",
-  "ggplot2",
-  "reshape2"
-)
-```
-
-Install missing packages before running the script, for example:
-
-```r
-install.packages(c(
-  "tidysynth", "foreign", "dplyr", "tidyr", "tmvtnorm",
-  "MASS", "MCMCpack", "fields", "coda", "ggplot2", "reshape2"
-))
+├── 01_BASC_full.R              # BASC with full-period fitting and donor-set selection
+├── 02_BASC_pre.R               # BASC fitted using the pre-intervention period
+├── 03_BASC_pre_NS.R            # Pre-intervention BASC without donor-set selection
+├── 04_standard_SCM.R           # Standard synthetic control
+├── 05_bsynth.R                 # Bayesian synthetic control using the bsynth package
+├── 06_fPCA_SYNTH.ipynb         # fPCA-SYNTH / RPCA-SYNTH comparison
+├── 07_ClusterSC.ipynb          # ClusterSC comparison
+├── requirements_python.txt     # Python dependencies
+└── data/
+    └── repgermany.dta          # West Germany GDP data
 ```
 
 ## Data
 
-The real-data example uses the West Germany dataset in Stata format:
+The empirical application uses the West Germany dataset from Abadie et al. (2015), containing annual per-capita GDP and related variables for West Germany and the donor countries.
+
+The data file used by all scripts is
 
 ```text
 data/repgermany.dta
 ```
 
-If the data file is not included in this repository due to licensing restrictions, place the file manually under the `data/` directory or modify the following line in `clean_basc_realdata.R`:
+The analysis period is 1960--2003, with German reunification in 1990 treated as the intervention. The pre-intervention period is 1960--1989 and the post-intervention period is 1990--2003.
+
+## BASC specifications
+
+### `01_BASC_full.R`
+
+Fits the main BASC specification over the full 1960--2003 period. The model performs donor-set selection and uses a two-dimensional linear post-intervention effect basis.
+
+### `02_BASC_pre.R`
+
+Fits BASC using only the pre-intervention observations from 1960--1989. The post-intervention latent Gaussian-process component is generated conditionally on the pre-intervention GP draws.
+
+### `03_BASC_pre_NS.R`
+
+Fits the no-selection counterpart of BASC-pre. All donor-inclusion indicators are fixed at one, and model parameters are estimated using 1960--1989 only.
+
+## Comparison methods
+
+### `04_standard_SCM.R`
+
+Fits a standard outcome-only synthetic control using the original, unscaled GDP outcomes over the pre-intervention period.
+
+### `05_bsynth.R`
+
+Fits Bayesian synthetic control using the official `bsynth` package under an outcome-only specification, with predictor matching and the Gaussian-process component turned off.
+
+### `06_fPCA_SYNTH.ipynb`
+
+Implements the fPCA-SYNTH / RPCA-SYNTH comparison using the `mlsynth` package:
+
+https://github.com/jgreathouse9/mlsynth
+
+The notebook includes the executed output.
+
+### `07_ClusterSC.ipynb`
+
+Implements the ClusterSC comparison using the authors' `syclib` implementation:
+
+https://github.com/srho1/ClusterSC
+
+Donor clustering uses the donor trajectories over the full observation period, while the treated unit is assigned to a donor cluster using its pre-intervention trajectory. After donor selection, an OLS synthetic control is fitted directly to the selected donors using the original 1960--1989 GDP outcomes. The number of clusters is selected by minimizing the pre-intervention RMSE over the candidate grid.
+
+The notebook is saved with executed output.
+
+## R requirements
+
+The R scripts use packages including
 
 ```r
-input_data_path <- "data/repgermany.dta"
+foreign
+dplyr
+tidyr
+tmvtnorm
+MASS
+MCMCpack
+fields
+coda
+Synth
+bsynth
+rstan
 ```
 
-## How to run
-
-Open R and run:
+For example,
 
 ```r
-source("clean_basc_realdata.R")
+install.packages(c(
+  "foreign", "dplyr", "tidyr", "tmvtnorm",
+  "MASS", "MCMCpack", "fields", "coda", "Synth"
+))
 ```
 
-By default, the script runs the MCMC sampler:
+The `bsynth` and `rstan` dependencies should be installed according to the installation instructions for the `bsynth` package.
 
-```r
-run_mcmc <- TRUE
-```
+## Python requirements
 
-After the MCMC output has been saved, set
-
-```r
-run_mcmc <- FALSE
-```
-
-to load the saved result object and regenerate posterior summaries and plots without rerunning the sampler.
-
-## Main outputs
-
-The script creates the following outputs under `results/realdata/`:
+Python dependencies for fPCA-SYNTH and ClusterSC are listed in
 
 ```text
-BASC_realdata_results.RData              # Saved MCMC results
-BASC_realdata_weight_summary.csv         # Posterior donor-weight and inclusion summaries
-BASC_realdata_prediction.RData           # Posterior counterfactual prediction object
-BASC_realdata_prediction_95ci.csv        # Posterior median and 95% credible intervals
-plot/BASC_realdata_counterfactual.png    # Counterfactual path plot
-plot/trace_plots_realdata.*              # Trace plots
-plot/density_plots_realdata.*            # Marginal posterior density plots
-plot/realdata_gamma.*                    # Posterior donor-inclusion plot
+requirements_python.txt
 ```
+
+Install them from the repository root using
+
+```bash
+pip install -r requirements_python.txt
+```
+
+The Python notebooks assume that the data file is available at
+
+```text
+data/repgermany.dta
+```
+
+## Running the empirical application
+
+Run the R scripts from the repository root:
+
+```r
+source("01_BASC_full.R")
+source("02_BASC_pre.R")
+source("03_BASC_pre_NS.R")
+source("04_standard_SCM.R")
+source("05_bsynth.R")
+```
+
+Run the following notebooks from the repository root:
+
+```text
+06_fPCA_SYNTH.ipynb
+07_ClusterSC.ipynb
+```
+
+from the repository root.
+
+The BASC MCMC scripts use long chains and may require substantial computation time.
+
+## Outputs
+
+The scripts save method-specific summaries, donor weights, fitted or counterfactual trajectories, and diagnostic output under
+
+```text
+results/realdata/
+```
+
+The Python notebooks also display the main numerical results directly in the saved notebook output.
 
 ## Citation
 
-If you use this code, please cite the corresponding paper.
+If you use this code, please cite:
 
+> Bayesian Donor Set Selection in Synthetic Controls.
