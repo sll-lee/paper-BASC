@@ -1,0 +1,3 @@
+# Python dependencies for the fPCA-SYNTH and ClusterSC notebooks
+mlsynth @ git+https://github.com/jgreathouse9/mlsynth.git@ea53dde7c95fd165f5736c5ce063dd8c4cb8bf30
+syclib @ git+https://github.com/srho1/ClusterSC.git@b223e1e2a2fd68aaff9da9feac8a5c08e1163ad7
