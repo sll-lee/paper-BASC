@@ -161,3 +161,7 @@ The Python notebooks also display the main numerical results directly in the sav
 If you use this code, please cite:
 
 > Bayesian Donor Set Selection in Synthetic Controls.
+
+## Contact
+
+If you encounter any issues or require additional information to reproduce the results, please contact the authors.
